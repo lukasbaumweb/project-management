@@ -58,7 +58,6 @@ export default function SignInSide() {
   const classes = useStyles();
   const [values, setValues] = React.useState({
     email: '',
-    password: '',
   });
 
   const [error, setError] = React.useState('');
@@ -70,20 +69,8 @@ export default function SignInSide() {
     });
   };
 
-  const onSubmitLogin = (e) => {
-    e.preventDefault();
+  const onSubmitPasswordReset = () => {
     setError('');
-    fire.auth
-      .signInWithEmailAndPassword(values.email, values.password)
-      .then(() => {})
-      .catch((err) => {
-        if (ERROR_CODES[err.code] !== undefined) {
-          setError(ERROR_CODES[err.code]);
-        } else {
-          setError(err.message);
-        }
-        console.error(err);
-      });
   };
 
   return (
@@ -99,7 +86,10 @@ export default function SignInSide() {
           <Typography component='h1' variant='h5'>
             Anmelden
           </Typography>
-          <form className={classes.form} onSubmit={onSubmitLogin} noValidate>
+          <form
+            className={classes.form}
+            onSubmit={onSubmitPasswordReset}
+            noValidate>
             <TextField
               variant='outlined'
               margin='normal'
@@ -108,19 +98,8 @@ export default function SignInSide() {
               label='E-Mail'
               autoComplete='email'
               autoFocus
-              onChange={(e) => handleChange(e, 'email')}
+              onChange={handleChange}
               value={values.email}
-            />
-            <TextField
-              variant='outlined'
-              margin='normal'
-              required
-              fullWidth
-              label='Passwort'
-              type='password'
-              autoComplete='current-password'
-              onChange={(e) => handleChange(e, 'password')}
-              value={values.password}
             />
             <Button
               type='submit'
@@ -132,11 +111,8 @@ export default function SignInSide() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link
-                  component={RouterLink}
-                  to='/resetpassword'
-                  variant='body2'>
-                  Passwort vergessen?
+                <Link component={RouterLink} to='/' variant='body2'>
+                  Anmelden?
                 </Link>
               </Grid>
               <Grid item>

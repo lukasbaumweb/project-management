@@ -1,15 +1,23 @@
 import React from 'react';
-import { BrowerRouter, Switch, Route } from 'react-router-dom';
+import { CssBaseline } from '@material-ui/core';
+
+import { BrowserRouter, Switch, Route } from 'react-router-dom';
+
+import Dashboard from './Dashboard';
+import AwesomeDrawer from './AwesomeDrawer';
 
 const UsersRoutes = () => {
   return (
-    <BrowerRouter>
-      <Switch>
-        <Route path='/about'></Route>
-        <Route path='/users'></Route>
-        <Route path='/'></Route>
-      </Switch>
-    </BrowerRouter>
+    <BrowserRouter>
+      <CssBaseline />
+      <AwesomeDrawer>
+        <Switch>
+          <Route path='*'>
+            <Dashboard />
+          </Route>
+        </Switch>
+      </AwesomeDrawer>
+    </BrowserRouter>
   );
 };
 
