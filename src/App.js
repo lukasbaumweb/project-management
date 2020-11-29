@@ -1,24 +1,30 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import CssBaseline from '@material-ui/core/CssBaseline';
+
+import Login from './components/Login';
+
+import fire from './fire';
 
 function App() {
+  const [userState, setUserState] = React.useState('unauthenticated');
+  React.useEffect(() => {
+    fire.auth.onAuthStateChanged(function (user) {
+      if (user) {
+        setUserState('authenticated');
+      } else {
+        setUserState('unauthenticated');
+      }
+    });
+    return () => {};
+  }, []);
+
+  if (userState === 'unauthenticated') {
+    return <Login />;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <CssBaseline />
     </div>
   );
 }
