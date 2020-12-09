@@ -13,24 +13,34 @@ import {
   List,
   ListItemIcon,
   ListItemText,
+  Avatar,
+  InputBase,
+  fade,
+  Slide,
+  useScrollTrigger,
 } from '@material-ui/core/';
 
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
+import DeveloperBoardIcon from '@material-ui/icons/DeveloperBoard';
+import DashboardIcon from '@material-ui/icons/Dashboard';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import SettingsIcon from '@material-ui/icons/Settings';
-import fire from '../fire';
+import SearchIcon from '@material-ui/icons/Search';
 
-import { useHistory } from 'react-router-dom';
+import placeHolderImage from './../assets/profile/profile-image-default.svg';
+
+import fire from './../fire';
+
+import { Link, useHistory } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme) => ({
   root: {
     display: 'flex',
+    flexGrow: 1,
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -84,11 +94,64 @@ const useStyles = makeStyles((theme) => ({
     // necessary for content to be below app bar
     ...theme.mixins.toolbar,
   },
+  search: {
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: fade(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: fade(theme.palette.common.white, 0.25),
+    },
+    marginLeft: 'auto!important',
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(1),
+      width: 'auto',
+    },
+  },
+  searchIcon: {
+    padding: theme.spacing(0, 2),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  inputRoot: {
+    color: 'inherit',
+  },
+  inputInput: {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      width: '12ch',
+      '&:focus': {
+        width: '20ch',
+      },
+    },
+  },
   content: {
     flexGrow: 1,
     padding: theme.spacing(3),
   },
+  centerMe: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
 }));
+
+function HideOnScroll({ children }) {
+  const trigger = useScrollTrigger({ target: window });
+
+  return (
+    <Slide appear={false} direction='down' in={!trigger}>
+      {children}
+    </Slide>
+  );
+}
 
 const AwesomeDrawer = ({ children }) => {
   const classes = useStyles();
@@ -114,27 +177,48 @@ const AwesomeDrawer = ({ children }) => {
 
   return (
     <div className={classes.root}>
-      <AppBar
-        position='fixed'
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open,
-        })}>
-        <Toolbar>
-          <IconButton
-            color='inherit'
-            aria-label='open drawer'
-            onClick={handleDrawerOpen}
-            edge='start'
-            className={clsx(classes.menuButton, {
-              [classes.hide]: open,
-            })}>
-            <MenuIcon />
-          </IconButton>
-          <Typography variant='h6' noWrap>
-            Mini variant drawer
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <HideOnScroll>
+        <AppBar
+          position='fixed'
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: open,
+          })}>
+          <Toolbar variant='dense'>
+            {/** TODO: Make dense a setting thus the user can decide */}
+            <IconButton
+              color='inherit'
+              aria-label='Öffne Sidebar'
+              onClick={handleDrawerOpen}
+              edge='start'
+              className={clsx(classes.menuButton, {
+                [classes.hide]: open,
+              })}>
+              <MenuIcon />
+            </IconButton>
+            <Typography variant='h6' noWrap>
+              Project Management
+            </Typography>
+            <div className={classes.search}>
+              <div className={classes.searchIcon}>
+                <SearchIcon />
+              </div>
+              <InputBase
+                placeholder='Search…'
+                classes={{
+                  root: classes.inputRoot,
+                  input: classes.inputInput,
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    alert('Work in progress');
+                  }
+                }}
+                inputProps={{ 'aria-label': 'search' }}
+              />
+            </div>
+          </Toolbar>
+        </AppBar>
+      </HideOnScroll>
       <Drawer
         variant='permanent'
         className={clsx(classes.drawer, {
@@ -158,18 +242,33 @@ const AwesomeDrawer = ({ children }) => {
         </div>
         <Divider />
         <List>
-          {['Inbox', 'Starred', 'Send email', 'Drafts'].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          <ListItem button key={'Einstellungen'}>
+          <ListItem button component={Link} to='/' key={'currentUser'}>
+            <ListItemIcon>
+              <Avatar
+                alt={fire.auth.currentUser.displayName}
+                src={fire.auth.currentUser.photoURL || placeHolderImage}
+              />
+            </ListItemIcon>
+            <ListItemText primary={fire.auth.currentUser.displayName} />
+          </ListItem>
+          <ListItem button component={Link} to='/' key={'Dashboard'}>
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary={'Dashboard'} />
+          </ListItem>
+          <ListItem button component={Link} to='/board' key={'Board'}>
+            <ListItemIcon>
+              <DeveloperBoardIcon />
+            </ListItemIcon>
+            <ListItemText primary={'Board'} />
+          </ListItem>
+          <Divider />
+          <ListItem
+            button
+            component={Link}
+            to='/settings'
+            key={'Einstellungen'}>
             <ListItemIcon>
               <SettingsIcon />
             </ListItemIcon>

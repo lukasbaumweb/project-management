@@ -80,9 +80,9 @@ export default function SignUp() {
     e.preventDefault();
     fire.auth
       .createUserWithEmailAndPassword(values.email, values.password)
-      .then(({user}) => {
+      .then(({ user }) => {
         user.sendEmailVerification().then(function () {
-          fire.firestore.collection('/users').add({
+          fire.firestore.collection('/users').doc(user.uid).set({
             firstName: values.fName,
             lastName: values.lName,
             email: values.email,
