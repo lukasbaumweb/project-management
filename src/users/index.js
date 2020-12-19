@@ -8,7 +8,7 @@ import AwesomeDrawer from './AwesomeDrawer';
 import Settings from './Settings';
 import Board from './Board';
 import CreateBoard from './CreateBoard';
-import BoardSettings from './components/BoardSettings';
+import BoardSettings from './BoardSettings';
 
 const UsersRoutes = ({ user }) => {
   return (

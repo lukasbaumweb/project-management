@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Button } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import CreateTaskDialog from './CreateTaskDialog';
+import CreateTaskDialog from './../dialogs/CreateTaskDialog';
 import fire from '../../fire';
 
 const BoardHeader = ({ boardId, boardName, columns, taskCounter }) => {

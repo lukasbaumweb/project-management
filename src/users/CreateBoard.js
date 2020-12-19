@@ -12,7 +12,7 @@ import {
 import BoardList from './components/BoardList';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import fire from '../fire';
-import CreateBoardDialog from './components/CreateBoardDialog';
+import CreateBoardDialog from './dialogs/CreateBoardDialog';
 
 const CreateBoard = () => {
   const [values, setValues] = React.useState({
