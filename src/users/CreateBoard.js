@@ -9,10 +9,10 @@ import {
   MenuItem,
   Fade,
 } from '@material-ui/core';
-import ProjectList from './components/ProjectList';
+import BoardList from './components/BoardList';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import fire from '../fire';
-import CreateProjectDialog from './components/CreateProjectDialog';
+import CreateBoardDialog from './components/CreateBoardDialog';
 
 const CreateBoard = () => {
   const [values, setValues] = React.useState({
@@ -29,27 +29,27 @@ const CreateBoard = () => {
     setValues({ ...values, anchorEl: null });
   };
 
-  const createNewProject = ({ projectName }) => {
-    let newProjectKey = fire.database.ref().child('projects').push().key;
-    fire.database.ref('projects/' + newProjectKey).set(
+  const createNewBoard = ({ boardName }) => {
+    let newBoardKey = fire.database.ref().child('boards').push().key;
+    fire.database.ref('boards/' + newBoardKey).set(
       {
-        owner: fire.auth.currentUser.uid,
-        projectId: newProjectKey,
-        projectName,
-        board: {
-          taskCounter: 0,
-          columns: [
-            {
-              order: 1,
-              name: 'Backlog',
-              isHidden: true,
-            },
-            { order: 2, name: 'Ideas' },
-            { order: 3, name: 'In Progress' },
-            { order: 4, name: 'Finished' },
-            { order: 5, name: 'Archived', isHidden: true },
-          ],
-        },
+        owners: fire.auth.currentUser.uid,
+        boardId: newBoardKey,
+        boardName,
+        description: '',
+        taskCounter: 0,
+        columns: [
+          {
+            order: 1,
+            name: 'Backlog',
+            type: 'backlog',
+          },
+          { order: 2, name: 'Ideas' },
+          { order: 3, name: 'In Progress' },
+          { order: 4, name: 'Finished' },
+          { order: 5, name: 'Archived', type: 'archive' },
+        ],
+        createdAt: new Date(),
       },
       (err) => {
         if (err) {
@@ -57,6 +57,7 @@ const CreateBoard = () => {
         } else {
           console.log(err);
           setValues({ ...values, openDialog: false, open: false });
+          window.location.reload();
         }
       }
     );
@@ -65,7 +66,7 @@ const CreateBoard = () => {
   return (
     <Container>
       <Typography variant='h4' component='h4' style={{ float: 'left' }}>
-        Projekte
+        Boards
       </Typography>
       <IconButton
         style={{ float: 'right' }}
@@ -86,16 +87,16 @@ const CreateBoard = () => {
             handleClose();
             setValues({ ...values, openDialog: true });
           }}>
-          Neues Projekt
+          Neues Board
         </MenuItem>
       </Menu>
       <Grid container>
         <Grid item xs={12}>
-          <ProjectList />
+          <BoardList />
         </Grid>
       </Grid>
       {values.openDialog ? (
-        <CreateProjectDialog onSaveForm={createNewProject} />
+        <CreateBoardDialog onSaveForm={createNewBoard} />
       ) : (
         <></>
       )}

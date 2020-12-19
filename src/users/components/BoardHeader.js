@@ -4,7 +4,7 @@ import AddIcon from '@material-ui/icons/Add';
 import CreateTaskDialog from './CreateTaskDialog';
 import fire from '../../fire';
 
-const BoardHeader = ({ projectId, projectName, columns, taskCounter }) => {
+const BoardHeader = ({ boardId, boardName, columns, taskCounter }) => {
   const [values, setValues] = React.useState({ open: false, taskTitle: null });
 
   const handleClickOpen = () => {
@@ -39,14 +39,14 @@ const BoardHeader = ({ projectId, projectName, columns, taskCounter }) => {
       (column) => column.name === data.type
     );
     const newTask = {
-      id: generateIdWithSentence(projectName, taskCounter),
+      id: generateIdWithSentence(boardName, taskCounter),
       title: data.title,
       description: data.description,
       type: data.type,
       createdAt: new Date(),
     };
     await fire.database
-      .ref(`projects/${projectId}/board/columns/${columnIndex}`)
+      .ref(`boards/${boardId}/columns/${columnIndex}`)
       .transaction((column) => {
         if (column) {
           if (typeof column.tasks === 'object') {
@@ -57,24 +57,22 @@ const BoardHeader = ({ projectId, projectName, columns, taskCounter }) => {
         }
         return column;
       });
-    await fire.database
-      .ref(`projects/${projectId}/board/`)
-      .transaction((board) => {
-        if (board) {
-          if (typeof board.taskCounter === 'number') {
-            board.taskCounter += 1;
-          } else {
-            board.taskCounter = 1;
-          }
+    await fire.database.ref(`boards/${boardId}/board/`).transaction((board) => {
+      if (board) {
+        if (typeof board.taskCounter === 'number') {
+          board.taskCounter += 1;
+        } else {
+          board.taskCounter = 1;
         }
-        return board;
-      });
+      }
+      return board;
+    });
   };
 
   return (
     <div style={{ display: 'flex', gap: 10 }}>
       <Typography component='h1' variant='h4'>
-        {projectName}
+        {boardName}
       </Typography>
       <Button
         aria-label='Add'

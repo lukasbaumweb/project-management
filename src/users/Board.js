@@ -130,12 +130,14 @@ const useStyles = makeStyles((theme) => ({
 const Board = () => {
   const classes = useStyles();
   const history = useHistory();
-  const { projectId } = useParams();
+  const { boardId } = useParams();
 
   const [values, setValues] = useState({
     loading: true,
-    project: null,
+    board: null,
     error: '',
+    showBacklog: false,
+    showArchived: false,
   });
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -161,26 +163,26 @@ const Board = () => {
     let newState;
     if (sInd === dInd) {
       const items = reorder(
-        values.project.board.columns[sInd],
+        values.board.columns[sInd],
         source.index,
         destination.index
       );
-      newState = [...values.project.board.columns];
+      newState = [...values.board.columns];
       newState[sInd] = items;
     } else {
       const result = move(
-        values.project.board.columns[sInd],
-        values.project.board.columns[dInd],
+        values.board.columns[sInd],
+        values.board.columns[dInd],
         source,
         destination
       );
-      newState = [...values.project.board.columns];
+      newState = [...values.board.columns];
       newState[sInd] = result[sInd];
       newState[dInd] = result[dInd];
     }
     if ({ ...values, columns: newState } !== values) {
       fire.database
-        .ref(`projects/${projectId}/board/columns/`)
+        .ref(`boards/${boardId}/columns/`)
         .transaction((columns) => {
           if (columns) {
             columns = newState;
@@ -197,29 +199,20 @@ const Board = () => {
     e.preventDefault();
   };
 
-  const deleteProject = () => {
-    if (window.confirm('Projekt wirklich löschen?')) {
-      fire.database
-        .ref(`projects/${projectId}`)
-        .remove()
-        .then(() => {
-          history.push('/boards');
-        });
-    }
-  };
+  
 
   React.useEffect(() => {
-    console.log(projectId);
+    console.log(boardId);
     const listener = fire.database
-      .ref(`projects/${projectId}`)
+      .ref(`boards/${boardId}`)
       .on('value', (snapshot) => {
         if (snapshot.exists) {
-          const project = snapshot.val();
-          if (project) {
-            console.log(project);
+          const board = snapshot.val();
+          if (board) {
+            console.log(board);
             setValues((state) => ({
               ...state,
-              project,
+              board,
               loading: false,
             }));
           } else {
@@ -232,9 +225,9 @@ const Board = () => {
         }
       });
     return () => {
-      fire.database.ref(`projects/${projectId}`).off('value', listener);
+      fire.database.ref(`boards/${boardId}`).off('value', listener);
     };
-  }, [projectId]);
+  }, [boardId]);
 
   if (values.loading) {
     return <Loader text='Board wird geladen' />;
@@ -248,10 +241,10 @@ const Board = () => {
       <Grid container>
         <Grid item xs={12} md={8}>
           <BoardHeader
-            projectId={projectId}
-            projectName={values.project.projectName}
-            columns={values.project.board?.columns}
-            taskCounter={values.project.board?.taskCounter}
+            boardId={boardId}
+            boardName={values.board.boardName}
+            columns={values.board?.columns}
+            taskCounter={values.board?.taskCounter}
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -288,11 +281,27 @@ const Board = () => {
               open={open}
               onClose={handleClose}
               TransitionComponent={Fade}>
-              <MenuItem onClick={() => deleteProject()}>
-                Projekt Löschen
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  setValues({ ...values, showBacklog: !values.showBacklog });
+                }}>
+                Backlog {values.showBacklog ? ' verstecken' : ' anzeigen'}
               </MenuItem>
-              <MenuItem onClick={handleClose}>My account</MenuItem>
-              <MenuItem onClick={handleClose}>Logout</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  setValues({ ...values, showArchived: !values.showArchived });
+                }}>
+                Archiv {values.showArchived ? ' verstecken' : ' anzeigen'}
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  handleClose();
+                  history.push(`/board/settings/${boardId}`);
+                }}>
+                Einstellungen
+              </MenuItem>
             </Menu>
           </div>
         </Grid>
@@ -300,65 +309,73 @@ const Board = () => {
 
       <div style={{ display: 'flex', marginTop: 15 }}>
         <DragDropContext onDragEnd={onDragEnd}>
-          {values.project.board?.columns.map((column, ind) => (
-            <Droppable key={ind} droppableId={`${ind}`}>
-              {(provided, snapshot) => (
-                <div>
-                  <Typography variant='subtitle1'>{column.name}</Typography>
-                  <div
-                    ref={provided.innerRef}
-                    style={getListStyle(snapshot.isDraggingOver)}
-                    {...provided.droppableProps}>
-                    {column.tasks?.map((item, index) => (
-                      <Draggable
-                        key={item.id}
-                        draggableId={item.id}
-                        index={index}
-                        className={classes.item}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={getItemStyle(
-                              snapshot.isDragging,
-                              provided.draggableProps.style
-                            )}>
-                            <div className={classes.item}>
-                              <h3 className={classes.itemTitle}>
-                                {item.title}
-                              </h3>
-                              <p className={classes.itemLabels}>
-                                {item?.labels?.map((l, i) => {
-                                  return (
-                                    <span
-                                      key={l.name + i}
-                                      className={classes.label}
-                                      style={{ backgroundColor: l.color }}>
-                                      {l.name}
-                                    </span>
-                                  );
-                                })}
-                              </p>
-                              <p className={classes.itemBottom}>
-                                <span>{item.id}</span>
-                                <img
-                                  className={classes.itemUrl}
-                                  src={item.assignee?.photoUrl}
-                                  alt={item.assignee?.displayName}
-                                />
-                              </p>
+          {values.board?.columns.map((column, ind) => {
+            if (
+              (column.type === 'backlog' && !values.showBacklog) ||
+              (column.type === 'archive' && !values.showArchived)
+            ) {
+              return null;
+            }
+            return (
+              <Droppable key={ind} droppableId={`${ind}`}>
+                {(provided, snapshot) => (
+                  <div>
+                    <Typography variant='subtitle1'>{column.name}</Typography>
+                    <div
+                      ref={provided.innerRef}
+                      style={getListStyle(snapshot.isDraggingOver)}
+                      {...provided.droppableProps}>
+                      {column.tasks?.map((item, index) => (
+                        <Draggable
+                          key={item.id}
+                          draggableId={item.id}
+                          index={index}
+                          className={classes.item}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              style={getItemStyle(
+                                snapshot.isDragging,
+                                provided.draggableProps.style
+                              )}>
+                              <div className={classes.item}>
+                                <h3 className={classes.itemTitle}>
+                                  {item.title}
+                                </h3>
+                                <p className={classes.itemLabels}>
+                                  {item?.labels?.map((l, i) => {
+                                    return (
+                                      <span
+                                        key={l.name + i}
+                                        className={classes.label}
+                                        style={{ backgroundColor: l.color }}>
+                                        {l.name}
+                                      </span>
+                                    );
+                                  })}
+                                </p>
+                                <p className={classes.itemBottom}>
+                                  <span>{item.id}</span>
+                                  <img
+                                    className={classes.itemUrl}
+                                    src={item.assignee?.photoUrl}
+                                    alt={item.assignee?.displayName}
+                                  />
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
                   </div>
-                </div>
-              )}
-            </Droppable>
-          ))}
+                )}
+              </Droppable>
+            );
+          })}
         </DragDropContext>
       </div>
     </div>

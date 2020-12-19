@@ -9,8 +9,8 @@ import {
   DialogTitle,
 } from '@material-ui/core/';
 
-const CreateProjectDialog = ({ onSaveForm }) => {
-  const [values, setValues] = React.useState({ open: true, projectName: '' });
+const CreateBoardDialog = ({ onSaveForm }) => {
+  const [values, setValues] = React.useState({ open: true, boardName: '' });
 
   const handleClose = () => {
     setValues({ ...values, open: false });
@@ -29,20 +29,20 @@ const CreateProjectDialog = ({ onSaveForm }) => {
         onClose={handleClose}
         aria-labelledby='form-dialog-title'>
         <form onSubmit={handleSubmit}>
-          <DialogTitle id='form-dialog-title'>Projekt erstellen</DialogTitle>
+          <DialogTitle id='form-dialog-title'>Board erstellen</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Erstelle jetzt dein eigenes Projekt um den Status deiner Aufgaben
+              Erstelle jetzt dein eigenes Board um den Status deiner Aufgaben
               leichter im Blick zu behalten.
             </DialogContentText>
             <TextField
               autoFocus
               margin='dense'
-              label='Projektname'
+              label='Boardname'
               type='text'
-              value={values.projectName}
+              value={values.boardName}
               onChange={(e) => {
-                setValues({ ...values, projectName: e.target.value });
+                setValues({ ...values, boardName: e.target.value });
               }}
               fullWidth
             />
@@ -51,9 +51,7 @@ const CreateProjectDialog = ({ onSaveForm }) => {
             <Button onClick={handleClose} color='primary'>
               Abbrechen
             </Button>
-            <Button
-              type='submit'
-              color='primary'>
+            <Button type='submit' color='primary'>
               Erstellen
             </Button>
           </DialogActions>
@@ -62,4 +60,4 @@ const CreateProjectDialog = ({ onSaveForm }) => {
     </div>
   );
 };
-export default CreateProjectDialog;
+export default CreateBoardDialog;

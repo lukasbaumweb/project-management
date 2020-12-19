@@ -8,6 +8,7 @@ import AwesomeDrawer from './AwesomeDrawer';
 import Settings from './Settings';
 import Board from './Board';
 import CreateBoard from './CreateBoard';
+import BoardSettings from './components/BoardSettings';
 
 const UsersRoutes = ({ user }) => {
   return (
@@ -21,10 +22,12 @@ const UsersRoutes = ({ user }) => {
           <Route path='/boards'>
             <CreateBoard />
           </Route>
-          <Route path='/board/:projectId'>
+          <Route path='/board/settings/:boardId'>
+            <BoardSettings />
+          </Route>
+          <Route path='/board/:boardId'>
             <Board />
           </Route>
-          
           <Route path='*'>
             <Dashboard />
           </Route>
