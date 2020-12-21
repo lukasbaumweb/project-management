@@ -1,17 +1,19 @@
 import React from 'react';
 
-import { Container, Typography, Grid } from '@material-ui/core';
+import { Button, Container, Typography, Grid } from '@material-ui/core';
 
 import Loader from './../components/Loader';
 
 import { useHistory, useParams } from 'react-router-dom';
 import fire from '../fire';
+import AskDialog from './dialogs/AskDialog';
 
 const BoardSettings = () => {
   const [values, setValues] = React.useState({
     board: null,
     loading: true,
     loadingError: '',
+    showDeleteDialog: false,
   });
   const { boardId } = useParams();
   const history = useHistory();
@@ -42,14 +44,12 @@ const BoardSettings = () => {
   }, [boardId]);
 
   const deleteBoard = () => {
-    if (window.confirm('Board wirklich löschen?')) {
-      fire.database
-        .ref(`boards/${boardId}`)
-        .remove()
-        .then(() => {
-          history.push('/boards');
-        });
-    }
+    fire.database
+      .ref(`boards/${boardId}`)
+      .remove()
+      .then(() => {
+        history.push('/boards');
+      });
   };
 
   if (values.loading) {
@@ -73,7 +73,34 @@ const BoardSettings = () => {
             {values.board.boardName}
           </Typography>
         </Grid>
+
+        <Grid item xs={12}>
+          <Button
+            variant='contained'
+            color='secondary'
+            onClick={() => {
+              setValues({ ...values, showDeleteDialog: true });
+            }}>
+            Board Löschen
+          </Button>
+        </Grid>
       </Grid>
+      {values.showDeleteDialog ? (
+        <AskDialog
+          title='Board unwiderruflich löschen'
+          onAgree={deleteBoard}
+          onClose={() => {
+            setValues({ ...values, showDeleteDialog: false });
+          }}>
+          <p>
+            Du bist gerade dabei das Board mit dem Namen "
+            {values.board.boardName}" zu löschen. Achtung! Diese Aktion kann
+            nicht widerrufen werden!
+          </p>
+        </AskDialog>
+      ) : (
+        <></>
+      )}
     </Container>
   );
 };
